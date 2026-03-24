@@ -7,7 +7,7 @@ library(ggtext)
 library(ggpmisc)
 library(readr)
 library(tidyverse)
-library(dplyr)
+library(dplyr) 
 #library(grid.arrange)
 library(anytime) 
 library(scales)
@@ -691,7 +691,7 @@ AE33_NCORE_hourly %>%
   ) +
   scale_y_continuous(breaks = c(0,1, 1.5, 2, 3), limits = c(0,3))+
   scale_x_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.15))+
-  #scale_x_continuous(breaks = c(0.6,0.7,0.8,0.9,1.0), limits = c(0.5,1.15))+
+  #scale_x_continuous(breaks = c(0.5,0.6,0.7,0.8,0.9,1.0), limits = c(0.5,1.15))+
   
   
   labs(title = expression(AAE[370/880]^{AE33} ~ "vs" ~ SSA[""*401~nm]^{PAX}*""**"")) + 
@@ -815,7 +815,7 @@ AE33_NCORE_hourly %>%
   ) + 
   annotate("text", x = 0.65, y = 3, label = "(b)", size = 5, fontface = "bold") +
   xlab(expression(italic(SSA)[""*401~nm]^{PAX}*""**"")) +
-  ylab(expression(italic(AAE)[""*401/870]^{PAX}*""**"")) -> AAE_PAX_SSA_OA_BC_RATIO
+  ylab(expression(italic(AAE)[""*401/870]^{PAX}*""**"")) #-> AAE_PAX_SSA_OA_BC_RATIO
 
 
 ggsave("AAE_PAX_SSA_OA_BC_RATIO_revision02.png", 
@@ -2709,268 +2709,8 @@ ggsave("MAAP_CF_AE33_RATIO_pm_OA_BC_RATIO_overlay_8x8_revision01.png",
 
 
 
-######### Figure S10 a   ##########
 
-####### 2022 WINTER (2ND) EPA EC, MAAP, AE33,PAAS,PAX BC   #########
-
-WINTER_EC_EPA_ALPACA <- read_csv("~/Google Drive/My Drive/alaska/Magee/new_2022/WINTER_EC_EPA_ALPACA.csv")
-
-
-names(WINTER_EC_EPA_ALPACA)
-WINTER_EC_EPA_ALPACA %>%
-  mutate(
-    EPA_EC_TOR_adj = EPA_EC_TOR * 0.8,  # EPA correction factor applied
-    EPA_EC_TOT_adj = EPA_EC_TOT - 0.025,  # Total EC calculation using original EPA_EC_TOR
-    `AE33_BC_abs_CF_660` = (AE33_BC_CF_660_MAC_10.35*7.77),
-  ) %>%  
-  select(date_local, 
-         EPA_EC_TOR_adj,  
-         EPA_EC_TOT_adj, 
-         `MAAP_BC_10.4_660` = MAAP_BC_637_MAC_10.4,
-         `PAAS_BC_660` = PAAS_BC_con_660_MAC_11.2,
-         `AE33_BC_CF_660` = (AE33_BC_CF_660_MAC_10.35),  # Fixed: removed extra parentheses
-         PAX_BC_870 = PAX_BC_conc_870) %>%
-  # Filter for January-February 2022
-  #filter(date_local >= as.Date("2021-12-28") & date_local <= as.Date("2022-03-02")) %>%
-  filter(date_local >= as.Date("2022-01-02") & date_local <= as.Date("2022-02-28")) %>%
-  pivot_longer(cols = -date_local, 
-               names_to = "variable", 
-               values_to = "value") %>% 
-  mutate(variable = factor(variable, levels = c("EPA_EC_TOR_adj", "EPA_EC_TOT_adj", 
-                                                "AE33_BC_CF_660", "PAAS_BC_660", 
-                                                "PAX_BC_870", "MAAP_BC_10.4_660"))) %>%
-  ggplot(aes(x = date_local, y = value, color = variable)) +
-  geom_line(size = 1) +  # Slightly thicker lines for better visibility
-  geom_point(size = 4) +
-  labs(title = "Comparison with Corrected EPA* EC",
-       #title = expression(OA[EPA] ~ "," ~ OA[`TCA-08`] ~ "," ~ OA[`AMS`] ~ "and" ~ OA[`ACSM`] ~ ("2022,  Jan and Feb")),
-       x = "Date") +
-  theme_bw() +  ylim(0,4)+
-  ylab(expression("(" * mu * g ~ m^-3 * ")")) +
-  annotate("text", x = as.Date("2022-01-07"), y = 4, label = "(a)", size = 5, fontface = "bold")+
-  #annotate("text", x = 1, y = 15, label = "TCA ",  color = "black", size = 5, hjust = 0) +  # Text label for mean
-  theme(
-    legend.text = element_text(size = rel(1.2)),
-    legend.position = c(0.6, 0.8),
-    axis.title = element_text(face = "plain", size = 14, color = "black"),
-    axis.text = element_text(size = 14, face = "plain", color = "black"),
-    axis.title.x = element_text(vjust = 0.1),
-    axis.text.y = element_text(hjust = 0.5),
-    axis.text.x = element_text(hjust = 0.0, angle = -45),
-    plot.title = element_text(size = 16),
-    panel.grid.minor = element_line(color = "grey90", size = 0.3),
-    panel.grid.major = element_line(color = "grey85", size = 0.5),
-    axis.ticks.length.x = unit(0.3, "cm"),              # Major tick length (longer)
-    ggh4x.axis.ticks.length.minor = rel(0.5)
-  ) +
-  scale_color_manual(name = NULL,
-                     values = c("EPA_EC_TOR_adj" = "orange",       # orange
-                                "EPA_EC_TOT_adj" = "#999999",      # gray
-                                "AE33_BC_CF_660" = "red",          # red 
-                                "PAAS_BC_660" = "blue",            #  Bluish green
-                                "PAX_BC_870" = "#56B4E9",          # Blue
-                                "MAAP_BC_10.4_660" = "#000000"),   # Black
-                     labels = c("EPA_EC_TOR_adj" = expression(`EPA*`~EC[paste("(TOR)")]),
-                                "EPA_EC_TOT_adj" = expression(`EPA*`~EC[paste("(TOT)")]),
-                                "AE33_BC_CF_660" = expression(`AE33*`~eBC[paste("(660 nm, MAC="~"4.46"~"m"^2*" "*"g"^{-1}*")")]),
-                                "PAAS_BC_660" = expression({PAAS-4*lambda}~eBC[paste("(660 nm, MAC="~"11.2"~"m"^2*" "*"g"^{-1}*")")]),
-                                "MAAP_BC_10.4_660" = expression(MAAP~eBC[paste("(637 nm, MAC="~"10.4"~"m"^2*" "*"g"^{-1}*")")]), 
-                                "PAX_BC_870" = expression(PAX~eBC[paste("(870 nm, MAC="~"4.74"~"m"^2*" "*"g"^{-1}*")")]))) +
-  scale_shape_manual(name = NULL, 
-                     values = c("EPA_EC_TOR_adj" = 16,      # Fixed: was EPA_OC
-                                "EPA_EC_TOT_adj" = 16,    # Fixed: was TCA-08_OC  
-                                "AE33_BC_CF_660" = 16,
-                                "PAAS_BC_660" = 16,
-                                "MAAP_BC_10.4_660" = 16, 
-                                "PAX_BC_870" = 16)) +
-  guides(color = guide_legend(override.aes = list(size = 3))) +
-  scale_x_date(
-    breaks = seq(as.Date("2022-01-02"), as.Date("2022-02-28"), by = "5 days"),
-    minor_breaks = seq(as.Date("2022-01-02"), as.Date("2022-02-28"), by = "1 day"),
-    date_labels = "%m/%d",  # Show month/day format
-    limits = c(as.Date("2021-12-30"), as.Date("2022-03-03")),  # 3 days before and after
-    expand = c(0, 0),
-    guide = "axis_minor") -> time_series_EPA_EC_correction_MAAP_PAAS_PAX_AE33_eBC
-
-
-######### Figure S10 b   ##########
-
-########### --> YORK REGRESSION CORRECTED EPA TOR  EC, AE33 WINTER   #############
-
-
-names(WINTER_EC_EPA_ALPACA)
-
-
-names(WINTER_EC_EPA_ALPACA)
-clean_data_WINTER_AE33_corr_EPA_TOR_EC <- WINTER_EC_EPA_ALPACA %>%
-  mutate(
-    EPA_EC_TOR_adj = EPA_EC_TOR * 0.8,  # EPA correction factor applied
-    EPA_EC_TOT_adj = EPA_EC_TOT - 0.025  # Total EC calculation using original EPA_EC_TOR
-  ) %>% 
-  select(date_local,EPA_EC_TOT_adj, EPA_EC_TOR_adj, AE33_BC_CF_660_MAC_10.35) %>%  # Add your date column name here
-  filter(!is.na(EPA_EC_TOR_adj), !is.na(AE33_BC_CF_660_MAC_10.35)) 
-
-# Run the regression function and print the result 
-regression_results_corrEPA_TOR_AE33 <- york_regression_2nd(clean_data_WINTER_AE33_corr_EPA_TOR_EC$EPA_EC_TOR_adj, clean_data_WINTER_AE33_corr_EPA_TOR_EC$AE33_BC_CF_660_MAC_10.35)
-
-
-# Extract the regression results
-slopeEPAcorr_AE33 <- regression_results_corrEPA_TOR_AE33$slope
-interceptEPAcorr_AE33 <- regression_results_corrEPA_TOR_AE33$intercept
-r_squaredEPAcorr_AE33 <- regression_results_corrEPA_TOR_AE33$r_squared
-rmseEPAcorr_AE33 <- regression_results_corrEPA_TOR_AE33$rmse
-maeEPAcorr_AE33 <- regression_results_corrEPA_TOR_AE33$mae
-
-
-# Plot the results with annotation
-ggplot(clean_data_WINTER_AE33_corr_EPA_TOR_EC, aes(x = EPA_EC_TOR_adj, y = AE33_BC_CF_660_MAC_10.35)) +
-  geom_point(size = 3, alpha = 0.8, color = "black") +
-  geom_abline(slope = slopeEPAcorr_AE33, intercept = interceptEPAcorr_AE33, color = "red", size = 0.3) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
-  theme_bw() + 
-  ylim(0,4)+   xlim(0,4)+ 
-  labs(title = expression(eBC[`AE33*`] ~ "vs" ~ EC_TOR[`EPA*`]))+ 
-  theme(legend.text = element_text(size = 14)) + 
-  theme(axis.title = element_text(face = "plain", size = 12, color = "black"), 
-        axis.text = element_text(size = 14, face = "plain", color = "black")) +
-  theme(plot.title = element_text(color = "tomato3", size = 10, hjust = 0.5, face = "bold")) +
-  theme(legend.key.height = unit(0.4, "inch")) + 
-  theme(legend.key.width = unit(0.1, "inch")) + 
-  xlab(bquote(italic(EC_TOR)[NCore]^{`EPA*`}*~"("*mu*g~m^-3*")")) +
-  ylab(expression(italic(eBC)[NCore]^{`AE33*`}*~"("*mu*g~m^-3*")")) +
-  theme(legend.position = "") +
-  annotate("text", x = 3.5, y = 4, label = "(b)",size = 5,fontface = "bold")+
-  annotate("text", 
-           x = 0.1, y = 4, 
-           label = paste0("y = ", round(slopeEPAcorr_AE33, 2), " x", ifelse(interceptEPAcorr_AE33 >= 0, " + ", " - "), abs(round(interceptEPAcorr_AE33, 2)), 
-                          "\nR² = ", round(r_squaredEPAcorr_AE33 , 2)),
-           hjust = 0, vjust = 1, size = 4.2, color = "black") #-> plot_AE33_EPA_TORcorr
-
-
-
-######### Figure S10 c   ##########
-
-########### --> YORK REGRESSION CORRECTED EPA TOT  EC, AE33 WINTER   #############
-
-
-
-names(WINTER_EC_EPA_ALPACA)
-
-
-names(WINTER_EC_EPA_ALPACA)
-clean_data_WINTER_AE33_corr_EPAtot_EC <- WINTER_EC_EPA_ALPACA %>%
-  mutate(
-    EPA_EC_TOR_adj = EPA_EC_TOR * 0.8,  # EPA correction factor applied
-    EPA_EC_TOT_adj = EPA_EC_TOT - 0.025  # Total EC calculation using original EPA_EC_TOR
-  ) %>% 
-  select(date_local,EPA_EC_TOT_adj, EPA_EC_TOR_adj, AE33_BC_CF_660_MAC_10.35) %>%  # Add your date column name here
-  filter(!is.na(EPA_EC_TOT_adj), !is.na(AE33_BC_CF_660_MAC_10.35)) 
-
-# Run the regression function and print the result
-regression_results_corrEPAtot_AE33 <- york_regression_2nd(clean_data_WINTER_AE33_corr_EPAtot_EC$EPA_EC_TOT_adj, clean_data_WINTER_AE33_corr_EPAtot_EC$AE33_BC_CF_660_MAC_10.35)
-
-
-# Extract the regression results
-slopeEPAcorrtot_AE33 <- regression_results_corrEPAtot_AE33$slope
-interceptEPAcorrtot_AE33 <- regression_results_corrEPAtot_AE33$intercept
-r_squaredEPAcorrtot_AE33 <- regression_results_corrEPAtot_AE33$r_squared
-rmseEPAcorrtot_AE33 <- regression_results_corrEPAtot_AE33$rmse
-maeEPAcorrtot_AE33 <- regression_results_corrEPAtot_AE33$mae
-
-
-# Plot the results with annotation
-ggplot(clean_data_WINTER_AE33_corr_EPAtot_EC, aes(x = EPA_EC_TOT_adj, y = AE33_BC_CF_660_MAC_10.35)) +
-  geom_point(size = 3, alpha = 0.8, color = "black") +
-  geom_abline(slope = slopeEPAcorrtot_AE33, intercept = interceptEPAcorrtot_AE33, color = "red", size = 0.3) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
-  theme_bw() + 
-  ylim(0,4)+   xlim(0,4)+ 
-  labs(title = expression(eBC[`AE33*`] ~ "vs" ~ EC_TOT[`EPA*`]))+ 
-  theme(legend.text = element_text(size = 14)) + 
-  theme(axis.title = element_text(face = "plain", size = 12, color = "black"), 
-        axis.text = element_text(size = 14, face = "plain", color = "black")) +
-  theme(plot.title = element_text(color = "tomato3", size = 10, hjust = 0.5, face = "bold")) +
-  theme(legend.key.height = unit(0.4, "inch")) + 
-  theme(legend.key.width = unit(0.1, "inch")) + 
-  xlab(bquote(italic(EC_TOT)[NCore]^{`EPA*`}*~"("*mu*g~m^-3*")")) +
-  ylab(expression(italic(eBC)[NCore]^{`AE33*`}*~"("*mu*g~m^-3*")")) +
-  theme(legend.position = "") +
-  annotate("text", x = 3.5, y = 4, label = "(c)",size = 5,fontface = "bold")+
-  annotate("text", 
-           x = 0.1, y = 4, 
-           label = paste0("y = ", round(slopeEPAcorrtot_AE33, 2), " x", ifelse(interceptEPAcorrtot_AE33 >= 0, " + ", " - "), abs(round(interceptEPAcorrtot_AE33, 2)),  
-                          "\nR² = ", round(r_squaredEPAcorrtot_AE33 , 2)),
-           hjust = 0, vjust = 1, size = 4.2, color = "black") -> plot_AE33_EPA_TOTcorr
-
-
-grid.arrange(plot_AE33_EPA_TORcorr, plot_AE33_EPA_TOTcorr,ncol = 1) -> plot_AE33_EPA_TORcorr_TOTcorr
-
-grid.arrange(time_series_EPA_EC_correction_MAAP_PAAS_PAX_AE33_eBC, plot_AE33_EPA_TORcorr_TOTcorr,ncol = 2,
-             widths = c(2, 1)) -> plot_TIMES_SERIES_AE33_EPA_TORcorr_TORcorr
-
-ggsave("plot_TIMES_SERIES_AE33_EPA_TORcorr_TORcorr_8.5x6a_revision01.png", 
-       plot = plot_TIMES_SERIES_AE33_EPA_TORcorr_TORcorr, 
-       width = 8.5, height = 6, 
-       device = "png",dpi=600)
-
-
-
-####### --> AAE AE33 vs AAE vs PPAS >  ########
-
-names(AE33_NCORE_hourly)
-# Clean data (filter out missing values based on your conditions)
-clean_data_AE33_PAAS_AAE <- AE33_NCORE_hourly %>%
-  filter(`Bland-Altman_MAAP_AE33_diff` > -1, `Bland-Altman_MAAP_AE33_diff` <=2) %>% 
-  filter(`Bland-Altman_CF_3.6_AE33_PAAS_405_DIFF` > -10, `Bland-Altman_CF_3.6_AE33_PAAS_405_DIFF` <10.2) %>% 
-  filter(!is.na(PAAS_AAE_405_785), !is.na(AE33_AAE_370_880))
-
-# Run the regression function and print the result
-regression_results_AE33_PAAS_AAE <- york_regression_2nd(clean_data_AE33_PAAS_AAE$PAAS_AAE_405_785, 
-                                                       clean_data_AE33_PAAS_AAE$AE33_AAE_370_880)
-
-
-
-# Extract the regression results
-slopeAE33_PAAS_AAE <-     regression_results_AE33_PAAS_AAE$slope
-interceptAE33_PAAS_AAE <- regression_results_AE33_PAAS_AAE$intercept
-r_squaredAE33_PAAS_AAE <- regression_results_AE33_PAAS_AAE$r_squared
-rmseAE33_PAAS_AAE <-      regression_results_AE33_PAAS_AAE$rmse
-maeAE33_PAAS_AAE <-       regression_results_AE33_PAAS_AAE$mae
-
-
-# Plot the results with annotation
-ggplot(clean_data_AE33_PAAS_AAE, aes(x = PAAS_AAE_405_785, y = (AE33_AAE_370_880))) +
-  geom_point(size = 2, alpha = 0.9, color = "blue", shape=1) +
-  geom_abline(slope = slopeAE33_PAAS_AAE, intercept = interceptAE33_PAAS_AAE, color = "red", size = 0.3) +
-  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "black") +
-  theme_bw() + 
-  ylim(0,3)+   xlim(0,3)+ 
-  labs(title = expression(AAE[370/880]^{AE33} ~ "vs" ~ AAE[405/785]^{"PAAS-4"*lambda}))+
-  theme(plot.title = element_text(color = "tomato3", size = 16, face = "bold")) +
-  theme(legend.text = element_text(size = 14)) + 
-  theme(axis.title = element_text(face = "plain", size = 16, color = "black"), 
-        axis.text = element_text(size = 16, face = "plain", color = "black")) +
-  theme(legend.key.height = unit(0.4, "inch")) + 
-  theme(legend.key.width = unit(0.1, "inch")) + 
-  #xlab(bquote(PAAS-4*lambda*~abs[`(total,785 nm)`]~ '('*Mm^-1*')')) +
-  #ylab(bquote(AE33~abs[`(total,785 nm)`]~ '('*Mm^-1*')')) +
-  xlab(expression(italic(AAE)[""*405/785]^{"PAAS-4"*lambda}*""**""))+  
-  ylab(expression(italic(AAE)[""*370/880]^{"AE33"}*""**""))+
-  theme(legend.position = "") +
-  annotate("text", 
-           x = 1.5, y = 1.7, 
-           label = paste0("y = ", round(slopeAE33_PAAS_AAE, 2), " x", ifelse(interceptAE33_PAAS_AAE >= 0, " + ", " - "), 
-                          abs(round(interceptAE33_PAAS_AAE, 2)),  
-                          "\nR² = ", round(r_squaredAE33_PAAS_AAE , 2)),
-           hjust = 0, vjust = 1, size = 4.5, color = "black")
-
-
-
-######## FOR OBJECTIVE 3RD --> ###########
-
-
-
-
+######### Figure S8 a   ##########
 
 AE33_NCORE_hourly %>% 
   filter(`Bland-Altman_MAAP_AE33_diff` > -1, `Bland-Altman_MAAP_AE33_diff` <=2) %>% 
@@ -2982,27 +2722,77 @@ AE33_NCORE_hourly %>%
   select(TheTime,`MAAP_BC_637_con_mac10.4`,PAX_SSA_401_based_hour,delta_co,MCE_CTC_430,AE33_AAE_370_880,CTC_AMS_OA,BC_ratio_OA) %>% 
   filter(!is.na(CTC_AMS_OA)) %>%
   filter(!is.na(AE33_AAE_370_880)) %>%
-  #ggplot(aes(y = PAX_SSA_401_based_hour, x = AE33_AAE_370_880, color = BC_ratio_OA)) +
-  ggplot(aes(y = PAX_SSA_401_based_hour, x = AE33_AAE_370_880)) +
-  geom_point(size = 3, color = "black", fill = "deepskyblue", shape = 21, alpha = 0.6) +
-  #geom_point(shape = 16, size = 3, alpha=0.9) +
+  ggplot(aes(x = PAX_SSA_401_based_hour, y = AE33_AAE_370_880, color = BC_ratio_OA)) +
+  geom_point(shape = 16, size = 3, alpha=0.9) +
   theme_bw() + 
-  #scale_color_stepsn(
-  #  colours = c("black", "#56B4E9", "blue", "red","yellow"),
-  #  limits = c(0.6, 1),
-  #  breaks = c(0.6, 0.7, 0.8, 0.9, 0.95,1),
-  #  labels = c("0.6", "0.7", "0.8", "0.9", "0.95","1.0"),
-  #  name = expression(frac(OA, eBC+OA))) +
-  scale_x_continuous(breaks = c(0,1, 1.5, 2, 3), limits = c(0,3))+
-  #scale_x_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.15))+
-  scale_y_continuous(breaks = c(0.5,0.6,0.7,0.8,0.9,1.0), limits = c(0.5,1))+
+  scale_color_stepsn(
+    colours = c("black", "#56B4E9", "blue", "red","yellow"),
+    limits = c(0.6, 1),
+    breaks = c(0.6, 0.7, 0.8, 0.9, 0.95,1),
+    labels = c("0.6", "0.7", "0.8", "0.9", "0.95","1.0"),
+    name = expression(frac(OA, eBC+OA))
+  ) +
+  scale_y_continuous(breaks = c(0,1, 1.5, 2, 3), limits = c(0,3))+
+  scale_x_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.15))+
+  #scale_x_continuous(breaks = c(0.5,0.6,0.7,0.8,0.9,1.0), limits = c(0.5,1.15))+
   
-  labs(title = expression(paste(AAE[370/880]^{AE33} ~ " vs " ~ SSA[PAX], "  (Winter = Jan-Feb)"))) +
-  #labs(title = expression(AAE[370/880]^{AE33} ~ "vs" ~ SSA[PAX])~ "Winter =Jan-Feb") +
-  annotate("text", y = 0.6, x = (0.1 + 0.1), parse = TRUE,
+  
+  labs(title = expression(AAE[370/880]^{AE33} ~ "vs" ~ SSA[""*401~nm]^{PAX}*""**"")) + 
+  annotate("text", x = 0.65, y = (0.1 + 0.3), parse = TRUE,
            label = as.character(expression(paste(OA[AMS] > 5*" "*mu*g*m^-3))), 
            color = "black", size = 4.5, hjust = 0) +
-  annotate("text", y = 0.55, x = (0.1 + 0.1), parse = TRUE,
+  annotate("text", x = 0.65, y = (0.001 + 0.1), parse = TRUE,
+           label = as.character(expression(paste(eBC[`MAAP`] > 1*" "*mu*g*m^-3))), 
+           color = "black", size = 4.5, hjust = 0) +
+  theme(
+    plot.title = element_text(lineheight=.8, face="bold", size=16),
+    legend.title = element_text(size=12),
+    axis.title = element_text(face="plain", size=16, color="black"),
+    axis.text = element_text(size=14, face="plain", color="black"),
+    legend.key.height = unit(0.2, "inch"),
+    legend.key.width = unit(0.05, "inch"),
+    legend.text = element_text(size=12),
+    legend.position = c(0.81, 0.5)
+  ) + 
+  annotate("text", x = 0.65, y = 3, label = "(a)", size = 5, fontface = "bold") +
+  xlab(expression(italic(SSA)[""*401~nm]^{PAX}*""**"")) +
+  ylab(expression(italic(AAE)[""*370/880]^{"AE33"}*""**"")) -> AAE_AE33_SSA_OA_BC_RATIO
+
+
+######### Figure S8 b   ##########
+
+AE33_NCORE_hourly %>% 
+  filter(`Bland-Altman_MAAP_AE33_diff` > -1, `Bland-Altman_MAAP_AE33_diff` <=2) %>% 
+  mutate(AE33_eBC_conc_CF_660 = AE33_Tabs_CF_660/7.77) %>% 
+  mutate(BC_ratio_OA = CTC_AMS_OA/(CTC_AMS_OA + MAAP_BC_637_con_mac10.4)) %>% 
+  mutate(BC_ratio_OA = ifelse(BC_ratio_OA <= 0, NA, BC_ratio_OA)) %>%
+  mutate(pm2p5_ratio_OA = pm2p5/(pm2p5 + MAAP_BC_637_con_mac10.4)) %>% 
+  mutate(pm2p5_ratio_OA = ifelse(pm2p5_ratio_OA <= 0, NA, pm2p5_ratio_OA)) %>%
+  mutate(pm2p5_ratio_OA = ifelse(pm2p5_ratio_OA <= 0, NA, pm2p5_ratio_OA)) %>%
+  #mutate(AE33_AAE_370_880 = ifelse(CTC_AMS_OA <= 5, NA, AE33_AAE_370_880)) %>%
+  mutate(AE33_AAE_370_880 = ifelse(`MAAP_BC_637_con_mac10.4` <1 , NA, AE33_AAE_370_880)) %>%
+  select(TheTime,`MAAP_BC_637_con_mac10.4`,pm2p5_ratio_OA,PAX_SSA_401_based_hour,delta_co,MCE_CTC_430,AE33_AAE_370_880,CTC_AMS_OA,BC_ratio_OA) %>% 
+  filter(!is.na(CTC_AMS_OA)) %>%
+  filter(!is.na(AE33_AAE_370_880)) %>%
+  ggplot(aes(x = PAX_SSA_401_based_hour, y = AE33_AAE_370_880, color = pm2p5_ratio_OA)) +
+  geom_point(shape = 16, size = 3, alpha=0.9) +
+  theme_bw() + 
+  scale_color_stepsn(
+    colours = c("black", "#56B4E9", "blue", "red","yellow"),
+    limits = c(0.6, 1),
+    breaks = c(0.6, 0.7, 0.8, 0.9, 0.95,1),
+    labels = c("0.6", "0.7", "0.8", "0.9", "0.95","1.0"),
+    name = expression(frac(PM[2.5], eBC+PM[2.5]))
+  ) +
+  scale_y_continuous(breaks = c(0,1, 1.5, 2,3), limits = c(0,3))+
+  #scale_x_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.15))+
+  scale_x_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.15))+
+  
+  labs(title = expression(AAE[370/880]^{AE33} ~ "vs" ~ SSA[401]^{PAX})) + 
+  annotate("text", x = 0.65, y = (0.1 + 0.3), parse = TRUE,
+           label = as.character(expression(paste(OA[AMS] > 5*" "*mu*g*m^-3))), 
+           color = "black", size = 4.5, hjust = 0) +
+  annotate("text", x = 0.65, y = (0.001 + 0.1), parse = TRUE,
            label = as.character(expression(paste(eBC[`MAAP`] > 1*" "*mu*g*m^-3))), 
            color = "black", size = 4.5, hjust = 0) +
   theme(
@@ -3013,92 +2803,499 @@ AE33_NCORE_hourly %>%
     legend.key.height = unit(0.2, "inch"),
     legend.key.width = unit(0.05, "inch"),
     legend.text = element_text(size=12),
-    legend.position = c(0.81, 0.5)
+    legend.position = c(0.82, 0.5)
   ) + 
-  theme(legend.position="none")+
-  annotate("text", y = 0.98, x = 2.8, label = "(b)", size = 6.5, fontface = "bold") +
-  annotate("text", y = 0.98, x = 1.5, label = "2022 Jan-Feb", size = 5, fontface = "bold") +
+  annotate("text", x = 0.65, y = 3, label = "(b)", size = 5, fontface = "bold") +
+  ylab(expression(italic(AAE)[""*370/880]^{"AE33"}*""**"")) +
+  xlab(expression(italic(SSA)[""*401~nm]^{PAX}*""**""))   -> AAE_AE33_SSA_PM_BC_RATIO
+
+
+
+ggarrange(AAE_AE33_SSA_OA_BC_RATIO, AAE_AE33_SSA_PM_BC_RATIO, 
+          ncol = 2, nrow = 1) -> AAE_AE33_SSA_oa_PM_BC_RATIOaa
+
+
+
+
+
+
+######### Figure S9   ##########
+
+
+plot_data_BC_ratio_OA_PAX <- AE33_NCORE_hourly %>% 
+  filter(`Bland-Altman_MAAP_AE33_diff` > -1, `Bland-Altman_MAAP_AE33_diff` <=2) %>%
+  select(MAAP_BC_abs_637, AE33_Tabs_CF_660, CTC_AMS_OA, Temp_C,MAAP_BC_637_con_mac10.4,PAX_SSA_401_based_hour) %>%
+  mutate(MAAP_PAASratio = (MAAP_BC_abs_637 / AE33_Tabs_CF_660)) %>%
+  mutate(BC_ratio_OA = CTC_AMS_OA/(MAAP_BC_637_con_mac10.4)) %>% 
+  mutate(BC_ratio_OA = ifelse(BC_ratio_OA <= 0, NA, BC_ratio_OA)) %>%
   
-  ylab(expression(italic(SSA)[""*401~nm]^{PAX}*""**"")) +
-  xlab(expression(italic(AAE)[""*370/880]^{"AE33"}*""**"")) #-> winter_aae_ssa_2022
+  mutate(MAAP_PAASratio = ifelse(MAAP_PAASratio > 6, NA, MAAP_PAASratio)) %>%
+  mutate(BC_ratio_OA_bin = cut(BC_ratio_OA, 
+                               breaks = c(0, 1.5, 3.0, 4.5, 6.0, 7.5, 9.0, 10.5, 12.0, 13.5, 15.0, 
+                                          16.5, 18.0, 19.5, 21.0, 22.5, 24.0, 25.5, 27.0, 28.5, 30.0, 
+                                          31.5, 33.0, 34.5, 36.0, 37.5, 39.0, 40.5, 42.0, 43.5, 45.0, 
+                                          46.5, 48.0, 49.5, 50),
+                               include.lowest = TRUE)) %>% 
+  filter(!is.na(BC_ratio_OA_bin))
 
-
-ggsave("winter_aae_ssa_2022_5x4_04.pdf", winter_aae_ssa_2022,
-       width = 5, height = 4, dpi = 300, bg = "white")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Test if slope is significantly different from 1
-# Using the York regression results and assuming you have access to the slope uncertainty
-
-# Method 1: If your york_regression_2nd function provides slope uncertainty
-# Install and load the IsoplotR package which has York regression
-# install.packages("IsoplotR")
-library(IsoplotR)
-
-# Prepare data for York regression (needs uncertainties for both x and y)
-# If you don't have measurement uncertainties, estimate them from scatter
-x <- clean_data_PAX_PAAS_IR$PAAS_b_total_abs_785_Mm
-y <- clean_data_PAX_PAAS_IR$PAX_Tabs870
-
-x_err <- abs(x * 0.10)
-y_err <- abs(y * 0.10)
-york_fit <- york(cbind(x, x_err, y, y_err))
-
-# Estimate uncertainties (you can adjust these if you have actual measurement errors)
-x_err <- rep(sd(x) * 0.05, length(x))  # 5% of SD as example
-y_err <- rep(sd(y) * 0.05, length(y))  # 5% of SD as example
-
-# Run York regression
-york_fit <- york(cbind(x, x_err, y, y_err))
-
-# Correct extraction from York regression
-slope_york <- york_fit$b[1]          # slope is in $b
-slope_se_york <- york_fit$b[2]       # slope SE
-intercept_york <- york_fit$a[1]      # intercept is in $a
-intercept_se_york <- york_fit$a[2]   # intercept SE
-
-# Test if slope = 1
-t_stat <- (slope_york - 1) / slope_se_york
-p_val <- 2 * pt(abs(t_stat), df = york_fit$df, lower.tail = FALSE)
-
-# Calculate 95% confidence interval for slope
-ci_lower <- slope_york - qt(0.975, york_fit$df) * slope_se_york
-ci_upper <- slope_york + qt(0.975, york_fit$df) * slope_se_york
-
-cat("\n=== York Regression Results ===\n")
-cat("Slope:", slope_york, "±", slope_se_york, "\n")
-cat("t-statistic (H0: slope=1):", t_stat, "\n")
-cat("p-value:", p_val, "\n")
-cat("Significantly different from 1?", ifelse(p_val < 0.05, "YES", "NO"), "\n")
+# Create combined plot with boxplot and colored scatter points
+library(ggplot2)
+ggplot(plot_data_BC_ratio_OA_PAX, aes(x = BC_ratio_OA, y = PAX_SSA_401_based_hour)) +
+  # Add transparent boxplots by bin
+  geom_boxplot(aes(group = BC_ratio_OA_bin), fill = NA, color = "black", 
+               outlier.shape = NA, alpha = 0.5, width = 8) +
+  # Add colored scatter points on top
+  geom_point(aes(color = Temp_C), size = 1.5, shape = 16, alpha = 0.5) +
+  # Color scale for temperature
+  scale_color_gradientn(
+    colours = c("darkslateblue", "blue", "deepskyblue", "cyan2", "yellow", "orange", "red2"),
+    values = scales::rescale(c(-40, -30, -20, -10, 0)),
+    breaks = c(-40, -30, -20, -10, 0),
+    limits = c(-40, 0),
+    labels = c("-40", "-30", "-20", "-10", "0"),
+    name = expression("T"~(degree*C))
+  ) +
+  ylab(expression(italic(SSA)[""*401~nm]^{PAX}*""**""))  +
+  xlab(bquote(frac(OA[`AMS`], eBC[`MAAP, 637 nm`]~ ''**'')))+ 
+  labs(title = expression(SSA[401]^{`PAX`}  ~ vs ~ OA[AMS]:eBC[MAAP]))+ 
+  scale_y_continuous(breaks = c(0.7,0.8,0.9,1.0), limits = c(0.65,1.0))+
+  xlim(0, 20) +
+  theme_bw() + 
+  #annotate("text", x = 18, y = 0.95, label = "(c)", size = 5, fontface = "bold") +
+  theme(
+    plot.title = element_text(lineheight=.8, face="bold", size=16),
+    legend.title = element_text(size=12),
+    axis.title = element_text(face="plain", size=16, color="black"),
+    axis.text = element_text(size=14, face="plain", color="black"),
+    legend.key.height = unit(0.10, "inch"),
+    legend.key.width = unit(0.26, "inch"),
+    legend.text = element_text(size=10),
+    legend.position = c(0.75, 0.17),
+    legend.direction = "horizontal",
+    legend.title.position = "top") #-> PAX_OA_BC_RATIO
 
 
 
-differences <- clean_data_PAX_PAAS_IR$PAX_Tabs870 - 
-  clean_data_PAX_PAAS_IR$PAAS_b_total_abs_785_Mm
+ggsave("PAX_OA_BC_RATIO_01aa.png", 
+       plot = PAX_OA_BC_RATIO, 
+       width = 5, height = 4, 
+       device = png, dpi =600)
 
-# Paired t-test
-paired_t_test <- t.test(clean_data_PAX_PAAS_IR$PAX_Tabs870, 
-                        clean_data_PAX_PAAS_IR$PAAS_b_total_abs_785_Mm, 
-                        paired = TRUE)
 
-# Print results
-cat("\n=== PAIRED T-TEST RESULTS ===\n")
-cat("Mean difference (PAX - PAAS):", round(mean(differences), 3), "Mm⁻¹\n")
-cat("SD of differences:", round(sd(differences), 3), "Mm⁻¹\n")
-cat("t-statistic:", round(paired_t_test$statistic, 3), "\n")
-cat("p-value:", format(paired_t_test$p.value, scientific = TRUE, digits = 3), "\n")
-cat("95% CI for difference: [", round(paired_t_test$conf.int[1], 3), ",", 
-    round(paired_t_test$conf.int[2], 3), "]\n")
+######### Figure S10   ##########
+
+
+
+###### EPA TOR ########
+library(tidyverse)
+library(ggplot2)
+
+# ── 1. Filter clean data for each instrument ──────────────────────────────────
+
+clean_AE33 <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOR, AE33_BC_CF_660_MAC_10.35) %>%
+  filter(!is.na(EPA_EC_TOR), !is.na(AE33_BC_CF_660_MAC_10.35))
+
+clean_MAAP <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOR, MAAP_BC_637_MAC_10.4) %>%
+  filter(!is.na(EPA_EC_TOR), !is.na(MAAP_BC_637_MAC_10.4))
+
+clean_PAAS <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOR, PAAS_BC_con_660_MAC_11.2) %>%
+  filter(!is.na(EPA_EC_TOR), !is.na(PAAS_BC_con_660_MAC_11.2))
+
+clean_PAX <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOR, PAX_BC_conc_870) %>%
+  filter(!is.na(EPA_EC_TOR), !is.na(PAX_BC_conc_870))
+
+# ── 2. York regression for each instrument ────────────────────────────────────
+
+# AE33
+reg_AE33      <- york_regression_2nd(clean_AE33$EPA_EC_TOR, clean_AE33$AE33_BC_CF_660_MAC_10.35)
+slope_AE33     <- reg_AE33$slope
+intercept_AE33 <- reg_AE33$intercept
+r2_AE33        <- reg_AE33$r_squared
+rmse_AE33      <- reg_AE33$rmse
+mae_AE33       <- reg_AE33$mae
+
+# MAAP
+reg_MAAP      <- york_regression_2nd(clean_MAAP$EPA_EC_TOR, clean_MAAP$MAAP_BC_637_MAC_10.4)
+slope_MAAP     <- reg_MAAP$slope
+intercept_MAAP <- reg_MAAP$intercept
+r2_MAAP        <- reg_MAAP$r_squared
+rmse_MAAP      <- reg_MAAP$rmse
+mae_MAAP       <- reg_MAAP$mae
+
+# PAAS
+reg_PAAS      <- york_regression_2nd(clean_PAAS$EPA_EC_TOR, clean_PAAS$PAAS_BC_con_660_MAC_11.2)
+slope_PAAS     <- reg_PAAS$slope
+intercept_PAAS <- reg_PAAS$intercept
+r2_PAAS        <- reg_PAAS$r_squared
+rmse_PAAS      <- reg_PAAS$rmse
+mae_PAAS       <- reg_PAAS$mae
+
+# PAX
+reg_PAX      <- york_regression_2nd(clean_PAX$EPA_EC_TOR, clean_PAX$PAX_BC_conc_870)
+slope_PAX     <- reg_PAX$slope
+intercept_PAX <- reg_PAX$intercept
+r2_PAX        <- reg_PAX$r_squared
+rmse_PAX      <- reg_PAX$rmse
+mae_PAX       <- reg_PAX$mae
+
+# ── 3. Combine regression lines into a data frame for plotting ────────────────
+
+reg_lines <- tibble(
+  Instrument = c("AE33",  "PAAS", "PAX","MAAP"),
+  slope      = c(slope_AE33,    slope_PAAS,     slope_PAX, slope_MAAP),
+  intercept  = c(intercept_AE33,  intercept_PAAS, intercept_PAX,intercept_MAAP),
+  r2         = c(r2_AE33,                r2_PAAS,        r2_PAX,r2_MAAP),
+  rmse       = c(rmse_AE33,          rmse_PAAS,      rmse_PAX, rmse_MAAP),
+  mae        = c(mae_AE33,            mae_PAAS,       mae_PAX,mae_MAAP)
+) %>%
+  mutate(
+    x_start = 0, x_end = 4,
+    y_start = slope * 0 + intercept,
+    y_end   = slope * 4 + intercept
+  )
+
+# ── 4. Combine point data into long format for plotting ───────────────────────
+
+plot_data <- bind_rows(
+  clean_AE33 %>% transmute(EPA_EC_TOR, eBC = AE33_BC_CF_660_MAC_10.35, Instrument = "AE33*"),
+  clean_PAAS %>% transmute(EPA_EC_TOR, eBC = PAAS_BC_con_660_MAC_11.2, Instrument = "PAAS"),
+  clean_PAX  %>% transmute(EPA_EC_TOR, eBC = PAX_BC_conc_870,           Instrument = "PAX"),
+  clean_MAAP %>% transmute(EPA_EC_TOR, eBC = MAAP_BC_637_MAC_10.4,     Instrument = "MAAP")
+)
+
+# ── Build colored annotation dataframe ───────────────────────────────────────
+ann_df <- tibble(
+  Instrument = c("AE33*", "PAAS", "PAX", "MAAP"),
+  x_pos = 0.15,
+  y_pos = c(3.50, 3.27, 3.05, 2.83),   # stacked downward, adjust spacing as needed
+  label = c(
+    paste0("AE33*:  y=", round(slope_AE33, 2), "x",
+           ifelse(intercept_AE33 >= 0, "+", "-"), abs(round(intercept_AE33, 2)),
+           ",R²=", round(r2_AE33, 2)),
+    paste0("PAAS:  y=", round(slope_PAAS, 2), "x",
+           ifelse(intercept_PAAS >= 0, "+", "-"), abs(round(intercept_PAAS, 2)),
+           ",R²=", round(r2_PAAS, 2)),
+    paste0("PAX:    y=", round(slope_PAX, 2), "x",
+           ifelse(intercept_PAX >= 0, "+", "-"), abs(round(intercept_PAX, 2)),
+           ", R²=", round(r2_PAX, 2)),
+    paste0("MAAP: y=", round(slope_MAAP, 2), "x",
+           ifelse(intercept_MAAP >= 0, "+", "-"), abs(round(intercept_MAAP, 2)),
+           ",  R²=", round(r2_MAAP, 2))
+  )
+)
+# ── 5. Colour and shape palettes ──────────────────────────────────────────────
+reg_ablines <- tibble(
+  Instrument = c("AE33*", "PAAS", "PAX","MAAP"),
+  slope      = c(slope_AE33,     slope_PAAS,     slope_PAX,slope_MAAP),
+  intercept  = c(intercept_AE33, intercept_PAAS, intercept_PAX,intercept_MAAP)
+)
+
+
+inst_order  <- c("AE33*", "PAAS", "PAX","MAAP")
+
+inst_colors <- c("AE33*" = "red",
+                 "PAAS" = "blue",
+                 "PAX"  = "#56B4E9", # "#56B4E9"
+                 "MAAP" = "black")
+
+inst_shapes <- c("AE33*" = 16,   # filled circle
+                 "MAAP" = 16,    # open circle
+                 "PAAS" = 16,   # filled square
+                 "PAX"  = 16)    # open square
+
+
+
+# ── 7. Plot ───────────────────────────────────────────────────────────────────
+
+#p <- 
+ggplot() +
+  
+  # 1-to-1 line
+  geom_abline(slope = 1, intercept = 0,
+              color = "black", linewidth = 0.1) +
+  
+  # ── One dashed regression line per instrument ─────────────────────────────
+  # Each instrument gets its own geom_abline so color maps correctly
+  geom_abline(slope = slope_AE33, intercept = intercept_AE33,
+              color = inst_colors["AE33*"], linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_PAAS, intercept = intercept_PAAS,
+              color = inst_colors["PAAS"], linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_PAX,  intercept = intercept_PAX,
+              color = inst_colors["PAX"],  linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_MAAP, intercept = intercept_MAAP,
+              color = inst_colors["MAAP"], linewidth = 0.3, linetype = "dashed") +
+  
+  # Data points
+  geom_point(
+    data = plot_data,
+    aes(x = EPA_EC_TOR, y = eBC,
+        color = Instrument, shape = Instrument),
+    size = 3.5, alpha = 1, stroke = 0.8
+  ) +
+  
+  # ── Colored equation annotations ──────────────────────────────────────────
+  geom_text(
+    data = ann_df,
+    aes(x = x_pos, y = y_pos,
+        label = label,
+        color = Instrument),       # picks up inst_colors automatically
+    hjust  = 0,                    # left-aligned
+    vjust  = 1,
+    size   = 3.4,
+    fontface = "plain"
+    #family = "mono"                # keeps = and numbers aligned across rows
+  ) +
+  
+  # Scales
+  scale_color_manual(name = NULL, values = inst_colors, breaks = inst_order) +
+  scale_shape_manual(name = NULL, values = inst_shapes, breaks = inst_order) +
+  scale_x_continuous(limits = c(0, 4), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 4), expand = c(0, 0)) +
+  
+  # Axis labels
+  xlab(bquote(italic(EC_TOR)[NCore]^{`EPA`}*~"("*mu*g~m^-3*")")) +
+  ylab(bquote(italic(eBC)        ~ "(" * mu * g ~ m^{-3} * ")")) +
+  
+  theme_bw() + 
+  #theme_test() + 
+  labs(title = expression(eBC ~ "vs" ~ EC_TOR))+ 
+  theme(plot.title = element_text(color = "tomato3", size = 16, hjust = 0.5, face = "bold")) +
+  
+  theme(
+    axis.title        = element_text(size = 13, color = "black"),
+    axis.text         = element_text(size = 12, color = "black"),
+    #legend.position   = c(0.12, 0.78),
+    #legend.background = element_rect(fill = alpha("white", 0.6), color = NA),
+    #legend.key.size   = unit(0.45, "cm"),
+    legend.position   = "none",  
+    legend.text       = element_text(size = 11)
+  ) +
+  
+  # Panel label
+  annotate("text", x = 0.23, y = 3.80,
+           label = "(a)", size = 5, fontface = "bold") -> pp
+
+print(p)
+
+# ── 8. Save ───────────────────────────────────────────────────────────────────
+ggsave("eBC_vs_ECTOR_pp_combined_03.png", pp,
+       width = 4, height = 4, dpi = 600, bg = "white")
+
+
+
+
+
+
+###### EPA TOT ########
+library(tidyverse)
+library(ggplot2)
+
+# ── 1. Filter clean data for each instrument ──────────────────────────────────
+
+clean_AE33_TOT <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOT, AE33_BC_CF_660_MAC_10.35) %>%
+  filter(!is.na(EPA_EC_TOT), !is.na(AE33_BC_CF_660_MAC_10.35))
+
+clean_MAAP_TOT <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOT, MAAP_BC_637_MAC_10.4) %>%
+  filter(!is.na(EPA_EC_TOT), !is.na(MAAP_BC_637_MAC_10.4))
+
+clean_PAAS_TOT <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOT, PAAS_BC_con_660_MAC_11.2) %>%
+  filter(!is.na(EPA_EC_TOT), !is.na(PAAS_BC_con_660_MAC_11.2))
+
+clean_PAX_TOT <- WINTER_EC_EPA_ALPACA %>%
+  select(EPA_EC_TOT, PAX_BC_conc_870) %>%
+  filter(!is.na(EPA_EC_TOT), !is.na(PAX_BC_conc_870))
+
+# ── 2. York regression for each instrument ────────────────────────────────────
+
+# AE33
+reg_AE33_TOT      <- york_regression_2nd(clean_AE33_TOT$EPA_EC_TOT, clean_AE33_TOT$AE33_BC_CF_660_MAC_10.35)
+slope_AE33_TOT     <- reg_AE33_TOT$slope
+intercept_AE33_TOT <- reg_AE33_TOT$intercept
+r2_AE33_TOT        <- reg_AE33_TOT$r_squared
+rmse_AE33_TOT      <- reg_AE33_TOT$rmse
+mae_AE33_TOT       <- reg_AE33_TOT$mae
+
+
+
+# PAAS
+reg_PAAS_TOT      <- york_regression_2nd(clean_PAAS_TOT$EPA_EC_TOT, clean_PAAS_TOT$PAAS_BC_con_660_MAC_11.2)
+slope_PAAS_TOT     <- reg_PAAS_TOT$slope
+intercept_PAAS_TOT <- reg_PAAS_TOT$intercept
+r2_PAAS_TOT        <- reg_PAAS_TOT$r_squared
+rmse_PAAS_TOT      <- reg_PAAS_TOT$rmse
+mae_PAAS_TOT       <- reg_PAAS_TOT$mae
+
+# PAX
+reg_PAX_TOT      <- york_regression_2nd(clean_PAX_TOT$EPA_EC_TOT, clean_PAX_TOT$PAX_BC_conc_870)
+slope_PAX_TOT     <- reg_PAX_TOT$slope
+intercept_PAX_TOT <- reg_PAX_TOT$intercept
+r2_PAX_TOT        <- reg_PAX_TOT$r_squared
+rmse_PAX_TOT      <- reg_PAX_TOT$rmse
+mae_PAX_TOT       <- reg_PAX_TOT$mae
+
+# MAAP
+reg_MAAP_TOT      <- york_regression_2nd(clean_MAAP_TOT$EPA_EC_TOT, clean_MAAP_TOT$MAAP_BC_637_MAC_10.4)
+slope_MAAP_TOT     <- reg_MAAP_TOT$slope
+intercept_MAAP_TOT <- reg_MAAP_TOT$intercept
+r2_MAAP_TOT        <- reg_MAAP_TOT$r_squared
+rmse_MAAP_TOT      <- reg_MAAP_TOT$rmse
+mae_MAAP_TOT       <- reg_MAAP_TOT$mae
+
+# ── 3. Combine regression lines into a data frame for plotting ────────────────
+
+reg_lines_TOT <- tibble(
+  Instrument_TOT = c("AE33", "PAAS", "PAX","MAAP"),
+  slope      = c(slope_AE33_TOT,    slope_PAAS_TOT,     slope_PAX_TOT, slope_MAAP_TOT),
+  intercept  = c(intercept_AE33_TOT, intercept_PAAS_TOT, intercept_PAX_TOT,intercept_MAAP_TOT),
+  r2         = c(r2_AE33_TOT,           r2_PAAS_TOT,        r2_PAX_TOT, r2_MAAP_TOT),
+  rmse       = c(rmse_AE33_TOT,            rmse_PAAS_TOT,      rmse_PAX_TOT,rmse_MAAP_TOT),
+  mae        = c(mae_AE33_TOT,            mae_PAAS_TOT,       mae_PAX_TOT, mae_MAAP_TOT)
+) %>%
+  mutate(
+    x_start = 0, x_end = 4,
+    y_start = slope * 0 + intercept,
+    y_end   = slope * 4 + intercept
+  )
+
+# ── 4. Combine point data into long format for plotting ───────────────────────
+
+plot_data_TOT <- bind_rows(
+  clean_AE33_TOT %>% transmute(EPA_EC_TOT, eBC = AE33_BC_CF_660_MAC_10.35, Instrument_TOT = "AE33*"),
+  clean_PAAS_TOT %>% transmute(EPA_EC_TOT, eBC = PAAS_BC_con_660_MAC_11.2, Instrument_TOT = "PAAS"),
+  clean_PAX_TOT  %>% transmute(EPA_EC_TOT, eBC = PAX_BC_conc_870,           Instrument_TOT = "PAX"),
+  clean_MAAP_TOT %>% transmute(EPA_EC_TOT, eBC = MAAP_BC_637_MAC_10.4,     Instrument_TOT = "MAAP"),
+)
+
+# ── Build colored annotation dataframe ───────────────────────────────────────
+ann_df_TOT <- tibble(
+  Instrument_TOT = c("AE33*", "PAAS", "PAX","MAAP"),
+  x_pos_TOT = 0.15,
+  y_pos_TOT = c(3.50, 3.27, 3.05, 2.83),   # stacked downward, adjust spacing as needed
+  label_TOT = c(
+    paste0("AE33*:  y=", round(slope_AE33_TOT, 2), "x",
+           ifelse(intercept_AE33_TOT >= 0, "+", "-"), abs(round(intercept_AE33_TOT, 2)),
+           ",R²=", round(r2_AE33_TOT, 2)),
+    
+    paste0("PAAS:  y=", round(slope_PAAS_TOT, 2), "x",
+           ifelse(intercept_PAAS_TOT >= 0, "+", "-"), abs(round(intercept_PAAS_TOT, 2)),
+           ",R²=", round(r2_PAAS_TOT, 2)),
+    
+    paste0("PAX:    y=", round(slope_PAX_TOT, 2), "x",
+           ifelse(intercept_PAX_TOT >= 0, "+", "-"), abs(round(intercept_PAX_TOT, 2)),
+           ", R²=", round(r2_PAX_TOT, 2)),
+    paste0("MAAP: y=", round(slope_MAAP_TOT, 2), "x",
+           ifelse(intercept_MAAP_TOT >= 0, "+", "-"), abs(round(intercept_MAAP_TOT, 2)),
+           ",  R²=", round(r2_MAAP_TOT, 2))
+  )
+)
+# ── 5. Colour and shape palettes ──────────────────────────────────────────────
+reg_ablines_TOT <- tibble(
+  Instrument_TOT = c("AE33*", "PAAS", "PAX","MAAP"),
+  slope_TOT      = c(slope_AE33_TOT,    slope_PAAS_TOT,     slope_PAX_TOT, slope_MAAP_TOT ),
+  intercept_TOT  = c(intercept_AE33_TOT,  intercept_PAAS_TOT, intercept_PAX_TOT,intercept_MAAP_TOT)
+)
+
+
+inst_order_TOT  <- c("AE33*", "PAAS", "PAX","MAAP")
+
+inst_colors_TOT <- c("AE33*" = "red",
+                 "PAAS" = "blue",
+                 "PAX"  = "#56B4E9",
+                 "MAAP" = "black")
+
+inst_shapes_TOT <- c("AE33*" = 16,   # filled circle
+                 "MAAP" = 16,    # open circle
+                 "PAAS" = 16,   # filled square
+                 "PAX"  = 16)    # open square
+
+
+
+# ── 7. Plot ───────────────────────────────────────────────────────────────────
+
+#p <- 
+ggplot() +
+  
+  # 1-to-1 line
+  geom_abline(slope = 1, intercept = 0,
+              color = "black", linewidth = 0.1) +
+  
+  # ── One dashed regression line per instrument ─────────────────────────────
+  # Each instrument gets its own geom_abline so color maps correctly
+  geom_abline(slope = slope_AE33_TOT, intercept = intercept_AE33_TOT,
+              color = inst_colors_TOT["AE33*"], linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_PAAS_TOT, intercept = intercept_PAAS_TOT,
+              color = inst_colors_TOT["PAAS"], linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_PAX_TOT,  intercept = intercept_PAX_TOT,
+              color = inst_colors_TOT["PAX"],  linewidth = 0.3, linetype = "dashed") +
+  geom_abline(slope = slope_MAAP_TOT, intercept = intercept_MAAP_TOT,
+              color = inst_colors_TOT["MAAP"], linewidth = 0.3, linetype = "dashed") +
+  
+  # Data points
+  geom_point(
+    data = plot_data_TOT,
+    aes(x = EPA_EC_TOT, y = eBC,
+        color = Instrument_TOT, shape = Instrument_TOT),
+    size = 3.5, alpha = 1, stroke = 0.8
+  ) +
+  
+  # ── Colored equation annotations ──────────────────────────────────────────
+  geom_text(
+    data = ann_df_TOT,
+    aes(x = x_pos_TOT, y = y_pos_TOT,
+        label = label_TOT,
+        color = Instrument_TOT),       # picks up inst_colors automatically
+    hjust  = 0,                    # left-aligned
+    vjust  = 1,
+    size   = 3.4,
+    fontface = "plain"
+    #family = "mono"                # keeps = and numbers aligned across rows
+  ) +
+  
+  # Scales
+  scale_color_manual(name = NULL, values = inst_colors, breaks = inst_order) +
+  scale_shape_manual(name = NULL, values = inst_shapes, breaks = inst_order) +
+  scale_x_continuous(limits = c(0, 4), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, 4), expand = c(0, 0)) +
+  
+  # Axis labels
+  xlab(bquote(italic(EC_TOT)[NCore]^{`EPA`}*~"("*mu*g~m^-3*")")) +
+  ylab(bquote(italic(eBC)        ~ "(" * mu * g ~ m^{-3} * ")")) +
+  
+  #theme_test() + 
+  theme_bw() + 
+  
+  labs(title = expression(eBC ~ "vs" ~ EC_TOT))+ 
+  theme(plot.title = element_text(color = "tomato3", size = 16, hjust = 0.5, face = "bold")) +
+  theme(
+    axis.title        = element_text(size = 13, color = "black"),
+    axis.text         = element_text(size = 12, color = "black"),
+    #legend.position   = c(0.12, 0.78),
+    #legend.background = element_rect(fill = alpha("white", 0.6), color = NA),
+    #legend.key.size   = unit(0.45, "cm"),
+    legend.position   = "none",  
+    legend.text       = element_text(size = 11)
+  ) +
+  
+  # Panel label
+  annotate("text", x = 0.23, y = 3.80,
+           label = "(b)", size = 5, fontface = "bold") -> pp_tot
+
+print(p)
+
+# ── 8. Save ───────────────────────────────────────────────────────────────────
+ggsave("eBC_vs_ECTOT_pp_combined_03.png", pp_tot,
+       width = 4, height = 4, dpi = 600, bg = "white")
+
+grid.arrange(pp, pp_tot,ncol = 2) -> plot_AE33_PAX_PAAS_scatter_EPA_TORun_TORun
+
+
+
+ggsave("plot_AE33_PAX_PAAS_scatter_EPA_TORun_TORun_05.png", plot_AE33_PAX_PAAS_scatter_EPA_TORun_TORun,
+       width = 6, height = 4, dpi = 600, bg = "white")
